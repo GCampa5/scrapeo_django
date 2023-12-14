@@ -1,9 +1,8 @@
 from datetime import datetime
-from googleapiclient.discovery import build
 from youtube_transcript_api import YouTubeTranscriptApi
 from googleapiclient.discovery import build
+from api_config import youtube_api_key
 
-youtube_api_key = 'AIzaSyAtdHniUqWc5Cg8Ql5jNiYGxgcdxWSsae8'
 youtube = build('youtube', 'v3', developerKey=youtube_api_key)
 
 def buscar_videos(query, maxResults):
