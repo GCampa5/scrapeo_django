@@ -6,12 +6,13 @@ django.setup()
 
 import requests
 from bs4 import BeautifulSoup
-from ScrapeoApp.models import News
+from ScrapeoApp.models import News, UserNews
+from django.contrib.auth.models import User
 from datetime import datetime
 import re
 
 
-def buscar_noticias(category, fechaLimite):
+def buscar_noticias(category, fechaLimite, user_id):
     base_url = f'https://elpais.com/noticias/{category}/'
     page = 0
 
@@ -76,6 +77,16 @@ def buscar_noticias(category, fechaLimite):
                     content_element = article.find('p', class_='c_d')
                     content = content_element.text.strip() if content_element else "Contenido no encontrado"
 
+                    # Verificar si el usuario ya tiene la noticia asociada
+                    user_obj = User.objects.get(id=user_id)
+
+                    # Obtener el ID de la noticia si ya existe
+                    news_id = News.objects.filter(Title=title).first().pk if News.objects.filter(Title=title).exists() else None
+
+                    if UserNews.objects.filter(user=user_obj, news=news_id).exists():
+                        print(f'La noticia "{title}" ya está asociada al usuario. No se almacenará nuevamente.')
+                        continue
+
                     # Verificar si una noticia con el mismo título ya existe en la base de datos
                     if News.objects.filter(Title=title).exists():
                         print(f'News "{title}" ya existe en la base de datos. No se almacenará nuevamente.')
@@ -100,6 +111,10 @@ def buscar_noticias(category, fechaLimite):
                         Content=content
                     )
                     noticia_obj.save()
+
+                    # Crear un objeto UserNews y asociarlo con el usuario y la noticia
+                    user_news_obj = UserNews(user=user_obj, news=noticia_obj)
+                    user_news_obj.save()
 
                 # Incrementar la página para consultar la siguiente
                 page += 1
