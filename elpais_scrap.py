@@ -83,13 +83,20 @@ def buscar_noticias(category, fechaLimite, user_id):
                     # Obtener el ID de la noticia si ya existe
                     news_id = News.objects.filter(Title=title).first().pk if News.objects.filter(Title=title).exists() else None
 
-                    if UserNews.objects.filter(user=user_obj, news=news_id).exists():
-                        print(f'La noticia "{title}" ya está asociada al usuario. No se almacenará nuevamente.')
-                        continue
-
                     # Verificar si una noticia con el mismo título ya existe en la base de datos
-                    if News.objects.filter(Title=title).exists():
-                        print(f'News "{title}" ya existe en la base de datos. No se almacenará nuevamente.')
+                    existing_news = News.objects.filter(Title=title).first()
+
+                    if existing_news:
+                        print(f'News "{title}" ya existe en la base de datos.')
+
+                        # Verificar si ya existe una asociación entre el usuario y la noticia
+                        if not UserNews.objects.filter(user=user_obj, news=existing_news).exists():
+                            # Crear un objeto UserNews y asociarlo con el usuario y la noticia
+                            user_news_obj = UserNews(user=user_obj, news=existing_news)
+                            user_news_obj.save()
+                            print(f'Asociación creada para el usuario y la noticia existente.')
+                        else:
+                            print(f'La asociación entre el usuario y la noticia ya existe.')
                         continue
 
                     # imprimir el título, el enlace y el autor
