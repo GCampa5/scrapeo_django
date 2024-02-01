@@ -12,12 +12,13 @@ from datetime import datetime
 import re
 
 
-def buscar_noticias(category, fechaLimite, user_id):
+def buscar_noticias(category, fecha_inicio, fecha_limite, user_id):
     base_url = f'https://elpais.com/noticias/{category}/'
     page = 0
 
-    # Convertir fechaLimite en un objeto datetime
-    fecha_limite = datetime.strptime(fechaLimite, '%Y-%m-%d')
+    # Convertir fechas en un objeto datetime
+    fecha_inicio_dt = datetime.strptime(fecha_inicio, '%Y-%m-%d')
+    fecha_limite_dt = datetime.strptime(fecha_limite, '%Y-%m-%d')
 
     try:
         while True:
@@ -56,9 +57,18 @@ def buscar_noticias(category, fechaLimite, user_id):
                     # Verificar si la noticia es anterior al parámetro
                     news_date = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S')
 
-                    if news_date < fecha_limite:
-                        print(f'Se encontró una noticia anterior a la fecha límite con fecha {news_date}. Deteniendo la búsqueda.')
-                        return
+                    # Verificar si la noticia es posterior o igual a la fecha inicio y anterior o igual a la fecha límite
+                    if fecha_inicio_dt <= news_date <= fecha_limite_dt:
+                        print(f'Se encontró una noticia dentro del rango de fechas con fecha {news_date}. Procesando la noticia.')
+
+                    else:
+                        # Verificar si la noticia es anterior a la fecha de inicio
+                        if news_date < fecha_inicio_dt:
+                            print(f'La noticia "{title}" es anterior a la fecha de inicio {news_date}. Deteniendo la búsqueda.')
+                            return
+                        else:
+                            print(f'La noticia "{title}" no está dentro del rango de fechas {news_date}. Ignorando la noticia.')
+                            continue
 
                     # extraer el enlace de la noticia
                     link_element = title_element.find('a') if title_element else None
@@ -133,4 +143,4 @@ def buscar_noticias(category, fechaLimite, user_id):
         print(f"Ocurrió un error: {str(e)}")
 
 if __name__ == "__main__":
-    buscar_noticias(category='expolios', fechaLimite='2022-10-31')
+    buscar_noticias(category='expolios', fecha_inicio='2023-12-12', fecha_limite='2024-01-14', user_id=1)

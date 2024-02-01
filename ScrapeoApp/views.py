@@ -20,10 +20,11 @@ def ejecutar_scraping(request):
         data = json.loads(request.body.decode('utf-8'))
         user_id = data.get('user_id')
         categoria = data.get('categoria', '')
-        fechaLimite = data.get('fechaLimite', '2010-01-01')
+        fechaLimite = data.get('fechaLimite', '2024-01-01')
+        fechaInico = data.get('fechaInicio', '2018-01-01')
 
         try:
-            buscar_noticias(categoria, fechaLimite, user_id)
+            buscar_noticias(categoria, fechaInico ,fechaLimite, user_id)
             return JsonResponse({"message": "Script ejecutado correctamente"}, status=200)
 
         except Exception as e:
